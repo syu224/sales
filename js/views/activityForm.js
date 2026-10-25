@@ -29,7 +29,7 @@ export function render(actId, q = {}) {
   const html = `
     <div class="page">
       <a class="for-head card" href="#/p/${encodeURIComponent(p.営業先ID)}">
-        <span class="for-label">営業先</span><b>${esc(p.施設名)}</b><span class="for-sub">${esc(p.市区町村 || '')}</span>
+        <span class="for-label">営業先</span><b>${esc(p.顧客名)}</b><span class="for-sub">${esc(p.市区町村 || '')}</span>
       </a>
       <form class="form card" id="aform" novalidate>
         ${field('種別', segmented('種別', 活動種別, v.種別))}

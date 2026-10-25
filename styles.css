@@ -318,6 +318,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); o
 .inline > :first-child { flex: 1; min-width: 0; }
 .inline .btn { height: var(--btn-h); }
 .other-field { margin-top: -6px; }
+#name-warn:empty, #phone-warn:empty { display: none; }
+.form > .link-btn { margin-top: -10px; align-self: flex-start; }
 
 .seg { display: flex; border: 1px solid var(--line); border-radius: var(--r-btn); overflow: hidden; background: var(--surface); }
 .seg-item { flex: 1; position: relative; }

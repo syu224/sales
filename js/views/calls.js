@@ -95,7 +95,7 @@ function card(p, due) {
   return `<article class="call-card">
     <a class="call-top" href="#/p/${id}">
       ${rankBadge(p.顧客ランク)}
-      <span class="call-name">${esc(p.施設名)}</span>
+      <span class="call-name">${esc(p.顧客名)}</span>
       ${p.確認状態 === '未確認' || !p.確認状態 ? '<span class="badge badge-chip">未確認</span>' : ''}
     </a>
     <div class="call-meta">${chip(p.業種 || '業種未設定')} <span>${esc(p.市区町村 || '')}</span></div>
@@ -112,7 +112,7 @@ function card(p, due) {
 
 function checkCard(p) {
   return `<a class="call-card call-check" href="#/p/${encodeURIComponent(p.営業先ID)}/edit">
-    <div class="call-top">${rankBadge(p.顧客ランク)}<span class="call-name">${esc(p.施設名)}</span>
+    <div class="call-top">${rankBadge(p.顧客ランク)}<span class="call-name">${esc(p.顧客名)}</span>
       <span class="badge badge-warn">${phoneDigits(p.電話番号) ? '番号違い' : '要入力'}</span></div>
     <div class="call-meta">${chip(p.業種 || '業種未設定')} <span>${esc(p.市区町村 || '')}</span></div>
     <div class="call-last">${phoneDigits(p.電話番号) ? `登録番号 ${esc(fmtPhone(p.電話番号))}（つながらなかった番号）` : '電話番号が未入力です'}・タップして編集</div>
@@ -120,10 +120,10 @@ function checkCard(p) {
 }
 
 function exportCsv(due, fresh, check) {
-  const head = ['区分', '営業先ID', '施設名', '電話番号', 'ランク', '業種', '都道府県', '市区町村', '確認状態', '前回の日付', '前回の結果', '次の一手', '期日'];
+  const head = ['区分', '営業先ID', '顧客名', '電話番号', 'ランク', '業種', '都道府県', '市区町村', '確認状態', '前回の日付', '前回の結果', '次の一手', '期日'];
   const row = (kind, p, d) => {
     const last = L.lastActivity(p.営業先ID);
-    return [kind, p.営業先ID, p.施設名, fmtPhone(p.電話番号), p.顧客ランク, p.業種, p.都道府県, p.市区町村, p.確認状態,
+    return [kind, p.営業先ID, p.顧客名, fmtPhone(p.電話番号), p.顧客ランク, p.業種, p.都道府県, p.市区町村, p.確認状態,
       last ? last.日時.slice(0, 10) : '', last ? last.結果 : '', d ? d.text : '', d ? d.date : ''];
   };
   const rows = [head,

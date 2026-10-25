@@ -29,8 +29,8 @@ export function render(id) {
       <section class="card p-head">
         <div class="p-badges">${rankBadge(p.顧客ランク)} ${stageBadge(p.段階 || '01 未接触')} ${chip(p.業種 || '業種未設定')} ${chip(p.顧客区分 || '区分未設定')}
           ${p.確認状態 && p.確認状態 !== '確認済み' ? `<span class="badge ${p.確認状態 === '番号違い' ? 'badge-warn' : 'badge-chip'}">${esc(p.確認状態)}</span>` : ''}</div>
-        <h2 class="p-name">${esc(p.施設名)}</h2>
-        ${p.法人名 ? `<p class="p-corp">${esc(p.法人名)}</p>` : ''}
+        <h2 class="p-name">${esc(p.顧客名)}</h2>
+        ${p.系列 ? `<p class="p-corp">系列：${esc(p.系列)}</p>` : ''}
         ${digits
           ? `<a class="call-phone num" href="tel:${esc(digits)}">${esc(fmtPhone(p.電話番号))}</a>
              <div class="call-btns">
@@ -68,7 +68,7 @@ export function render(id) {
     </div>`;
 
   return {
-    title: p.施設名, back: true, backTo: 'calls', tab: '', live: true, html, context: p,
+    title: p.顧客名, back: true, backTo: 'calls', tab: '', live: true, html, context: p,
     mount(root) {
       root.querySelector('#copy')?.addEventListener('click', async () => {
         const ok = await copyText(digits);

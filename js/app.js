@@ -156,8 +156,8 @@ function openAddMenu() {
   openSheet(`
     <div class="menu-list">
       <button class="menu-item" data-a="prospect">${icon('building')}<span><b>営業先を登録</b><small>新しい施設・会社を追加</small></span></button>
-      <button class="menu-item" data-a="activity">${icon('note')}<span><b>活動を記録</b><small>${ctx.営業先ID ? esc(ctx.施設名) + ' の架電・訪問など' : '架電・訪問・メールの結果'}</small></span></button>
-      <button class="menu-item" data-a="deal">${icon('deal')}<span><b>案件を作成</b><small>${ctx.営業先ID ? esc(ctx.施設名) + ' に新しい商談' : '営業先に新しい商談を追加'}</small></span></button>
+      <button class="menu-item" data-a="activity">${icon('note')}<span><b>活動を記録</b><small>${ctx.営業先ID ? esc(ctx.顧客名) + ' の架電・訪問など' : '架電・訪問・メールの結果'}</small></span></button>
+      <button class="menu-item" data-a="deal">${icon('deal')}<span><b>案件を作成</b><small>${ctx.営業先ID ? esc(ctx.顧客名) + ' に新しい商談' : '営業先に新しい商談を追加'}</small></span></button>
     </div>`, {
     title: '登録・記録',
     onMount(body) {

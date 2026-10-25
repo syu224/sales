@@ -175,7 +175,7 @@ export function callList(f = {}) {
   });
   fresh.sort((a, b) => rankOrder(a.顧客ランク || 'C') - rankOrder(b.顧客ランク || 'C')
     || String(a.市区町村).localeCompare(String(b.市区町村), 'ja')
-    || String(a.施設名).localeCompare(String(b.施設名), 'ja'));
+    || String(a.顧客名).localeCompare(String(b.顧客名), 'ja'));
   return { due, fresh, check };
 }
 

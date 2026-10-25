@@ -12,7 +12,7 @@ let showExcluded = false;
 export function render() {
   const html = `
     <div class="page">
-      <input type="search" id="q" class="search-input" placeholder="施設名・法人名・電話番号・市区町村" value="${esc(lastQuery)}" autocomplete="off">
+      <input type="search" id="q" class="search-input" placeholder="顧客名・系列・電話番号・市区町村" value="${esc(lastQuery)}" autocomplete="off">
       <label class="check"><input type="checkbox" id="ex" ${showExcluded ? 'checked' : ''}><span>営業対象外も表示</span></label>
       <div id="results"></div>
       <a class="btn btn-ghost btn-wide" href="#/p/new">${icon('plus', 20)}営業先を登録</a>
@@ -29,7 +29,7 @@ export function render() {
         showExcluded = ex.checked;
         const rows = state.data.営業先
           .filter((p) => (showExcluded ? !p.統合先ID : L.isActive(p)) && matchProspect(p, q.value))
-          .sort((a, b) => String(a.施設名).localeCompare(String(b.施設名), 'ja'));
+          .sort((a, b) => String(a.顧客名).localeCompare(String(b.顧客名), 'ja'));
         out.innerHTML = rows.length
           ? `<p class="note">${rows.length}件</p><div class="card"><ul class="rows">${rows.slice(0, 200).map(row).join('')}</ul></div>`
           : empty('見つかりません');
@@ -48,7 +48,7 @@ function row(p) {
     <a class="row-main" href="#/p/${encodeURIComponent(p.営業先ID)}">
       ${rankBadge(p.顧客ランク)}
       <span class="row-body">
-        <span class="row-title">${esc(p.施設名)} ${ex ? '<span class="badge badge-chip">対象外</span>' : ''}</span>
+        <span class="row-title">${esc(p.顧客名)} ${ex ? '<span class="badge badge-chip">対象外</span>' : ''}</span>
         <span class="row-text">${esc([p.業種, p.市区町村, fmtPhone(p.電話番号) || '電話番号なし'].filter(Boolean).join(' ・ '))}</span>
       </span>
       ${stageBadge(p.段階 || '01 未接触')}

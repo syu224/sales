@@ -9,7 +9,7 @@ export function matchProspect(p, q) {
   if (!q) return true;
   const n = normName(q);
   const d = phoneDigits(q);
-  return (n && (normName(p.施設名).includes(n) || normName(p.法人名).includes(n) || normName(p.市区町村).includes(n)))
+  return (n && (normName(p.顧客名).includes(n) || normName(p.系列).includes(n) || normName(p.市区町村).includes(n)))
     || (d.length >= 3 && phoneDigits(p.電話番号).includes(d));
 }
 
@@ -22,11 +22,11 @@ export function pickProspect(title = '営業先を選ぶ') {
         .sort((a, b) => String(b.更新日時).localeCompare(String(a.更新日時)))
         .slice(0, 40);
       return rows.length
-        ? rows.map((p) => `<button class="pick-row" data-id="${esc(p.営業先ID)}">${rankBadge(p.顧客ランク)}<span class="pick-name">${esc(p.施設名)}</span><span class="pick-sub">${esc(p.市区町村 || '')}</span></button>`).join('')
+        ? rows.map((p) => `<button class="pick-row" data-id="${esc(p.営業先ID)}">${rankBadge(p.顧客ランク)}<span class="pick-name">${esc(p.顧客名)}</span><span class="pick-sub">${esc(p.市区町村 || '')}</span></button>`).join('')
         : '<div class="empty">見つかりません</div>';
     };
     const wrap = openSheet(`
-      <input type="search" class="search-input" placeholder="施設名・電話番号・市区町村で探す" autocomplete="off">
+      <input type="search" class="search-input" placeholder="顧客名・電話番号・市区町村で探す" autocomplete="off">
       <div class="pick-list">${list('')}</div>`, {
       title,
       onMount(body) {

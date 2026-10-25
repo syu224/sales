@@ -21,7 +21,7 @@ export function render(id) {
   const html = `
     <div class="page">
       <section class="card">
-        ${p ? `<a class="for-head" href="#/p/${encodeURIComponent(p.営業先ID)}"><span class="for-label">${esc(L.segmentOf(p))}</span><b>${esc(p.施設名)}</b><span class="for-sub">${esc(p.業種 || '')}</span></a>` : `<div class="alert">${icon('alert', 18)}<div>営業先（${esc(d.営業先ID)}）が見つかりません</div></div>`}
+        ${p ? `<a class="for-head" href="#/p/${encodeURIComponent(p.営業先ID)}"><span class="for-label">${esc(L.segmentOf(p))}</span><b>${esc(p.顧客名)}</b><span class="for-sub">${esc(p.業種 || '')}</span></a>` : `<div class="alert">${icon('alert', 18)}<div>営業先（${esc(d.営業先ID)}）が見つかりません</div></div>`}
         <h2 class="p-name">${esc(d.案件名 || '（案件名なし）')}</h2>
         <div class="p-badges">${stageBadge(d.段階)} ${d.利用目的 ? chip(d.利用目的) : ''}</div>
         <dl class="kv">

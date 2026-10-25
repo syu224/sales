@@ -95,7 +95,7 @@ function todoRow(t) {
     <a class="row-main" href="${href}">
       <span class="row-ic">${icon(ic, 20)}</span>
       <span class="row-body">
-        <span class="row-title">${esc(p.施設名)}</span>
+        <span class="row-title">${esc(p.顧客名)}</span>
         <span class="row-text">${t.deal ? `${icon('deal', 13)} ${esc(t.deal.案件名 || '案件')}<br>` : ''}${esc(t.text)}</span>
       </span>
       ${dueBadge(t)}
@@ -110,7 +110,7 @@ function visitRow(v, showDate) {
     <a class="row-main" href="#/p/${encodeURIComponent(v.prospect.営業先ID)}">
       <span class="row-ic">${icon('visit', 20)}</span>
       <span class="row-body">
-        <span class="row-title">${esc(v.prospect.施設名)}</span>
+        <span class="row-title">${esc(v.prospect.顧客名)}</span>
         <span class="row-text">${esc([v.prospect.市区町村, v.prospect.番地].filter(Boolean).join(' '))}${a.次の一手 ? ` ・ ${esc(a.次の一手)}` : ''}</span>
       </span>
       <span class="badge badge-chip num">${showDate ? esc(fmtDate(a.訪問予定日時)) + ' ' : ''}${esc(fmtTime(a.訪問予定日時))}</span>
@@ -123,7 +123,7 @@ function contractRow(c) {
     <a class="row-main" href="#/deal/${encodeURIComponent(c.deal.案件ID)}">
       <span class="row-ic">${icon('doc', 20)}</span>
       <span class="row-body">
-        <span class="row-title">${esc(c.prospect.施設名)}</span>
+        <span class="row-title">${esc(c.prospect.顧客名)}</span>
         <span class="row-text">${icon('deal', 13)} ${esc(c.deal.案件名 || '案件')}<br>送付 ${esc(fmtDate(c.deal.契約書送付日) || '未入力')} ・ 返送予定 ${esc(fmtDate(c.deal.契約書返送予定日) || '未入力')}</span>
       </span>
       ${c.overdue ? `<span class="badge badge-warn">${daysBetween(c.date, todayStr())}日超過</span>` : c.today ? '<span class="badge badge-today">本日</span>' : ''}

@@ -54,7 +54,7 @@ function row({ d, p }, next) {
   return `<li class="row ${n?.overdue ? 'row-warn' : ''}">
     <a class="row-main" href="#/deal/${encodeURIComponent(d.案件ID)}">
       <span class="row-body">
-        <span class="row-title">${esc(p.施設名)} <small>／${esc(d.案件名 || '')}</small></span>
+        <span class="row-title">${esc(p.顧客名)} <small>／${esc(d.案件名 || '')}</small></span>
         <span class="row-text">${esc(sub)}</span>
         ${n ? `<span class="row-next ${n.overdue ? 'warn-text' : ''}">次：${esc(n.text)}（${esc(fmtDate(n.date))}）</span>` : ''}
       </span>

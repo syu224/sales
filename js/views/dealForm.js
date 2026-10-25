@@ -20,7 +20,7 @@ export function render(id, q = {}) {
   const html = `
     <div class="page">
       <a class="for-head card" href="#/p/${encodeURIComponent(p.営業先ID)}">
-        <span class="for-label">${esc(L.segmentOf(p))}</span><b>${esc(p.施設名)}</b><span class="for-sub">${esc(p.業種 || '')}</span>
+        <span class="for-label">${esc(L.segmentOf(p))}</span><b>${esc(p.顧客名)}</b><span class="for-sub">${esc(p.業種 || '')}</span>
       </a>
       ${prevDeal ? `<button type="button" class="btn btn-ghost btn-wide" id="copy-prev">${icon('copy', 20)}前回の案件をコピー（${esc(prevDeal.案件名 || prevDeal.案件ID)}）</button>` : ''}
       <form class="form card" id="dform" novalidate>${fields(d || { 段階: '04 提案・見積作成' })}</form>

@@ -1,4 +1,4 @@
-// 営業先の登録・編集（電話番号は必須。同じ番号・似た施設名があれば注意を出す）
+// 営業先の登録・編集（電話番号は必須。同じ番号・似た顧客名があれば注意を出す）
 
 import * as sync from '../sync.js';
 import { state } from '../sync.js';
@@ -17,15 +17,19 @@ export function render(id) {
   const html = `
     <div class="page">
       <form class="form card" id="pform" novalidate>
-        ${field('施設名', `<input name="施設名" value="${esc(v.施設名 || '')}" required autocomplete="off" placeholder="例：○○病院">`, { required: true })}
+        ${field('顧客名', `<input name="顧客名" value="${esc(v.顧客名 || '')}" required autocomplete="off" placeholder="例：○○病院">`, { required: true })}
         <div id="name-warn"></div>
+        <button type="button" class="link-btn" id="show-keiretsu" ${v.系列 ? 'hidden' : ''}>${icon('plus', 16)}系列を入れる（系列がある場合）</button>
+        <div id="keiretsu-box" ${v.系列 ? '' : 'hidden'}>
+          ${field('系列', `<input name="系列" value="${esc(v.系列 || '')}" autocomplete="off" list="keiretsu-list" placeholder="例：○○会、△△ホールディングス">`, { hint: '同じ系列は同じ書き方で（候補から選べます）。社内の取引先との照合（ランクB）に使います' })}
+          <datalist id="keiretsu-list">${[...new Set(state.data.営業先.map((x) => x.系列).filter(Boolean))].sort().map((k) => `<option value="${esc(k)}">`).join('')}</datalist>
+        </div>
         ${field('電話番号', `<input name="電話番号" value="${esc(v.電話番号 || '')}" inputmode="tel" autocomplete="off" placeholder="例：0312345678（ハイフンなしでも可）">`, { required: true, hint: '重複チェックに使います' })}
         <div id="phone-warn"></div>
         ${field('業種', segmented('業種', 業種, kind.base, { cls: 'seg-wrap' }), { required: true, hint: `受入団体＝${業種補足.受入団体}` })}
         <div class="field other-field" id="kind-other" ${kind.base === 'その他' ? '' : 'hidden'}>
           <input name="業種その他" value="${esc(kind.other)}" placeholder="その他の業種（例：学校）">
         </div>
-        ${field('法人名', `<input name="法人名" value="${esc(v.法人名 || '')}" autocomplete="off" placeholder="例：医療法人○○会">`, { hint: '後日、社内の取引先と照合してランクを自動で付けるときに使います' })}
         <div class="grid2">
           ${field('顧客区分', selectBox('顧客区分', 顧客区分, v.顧客区分, { placeholder: null }))}
           ${field('段階', selectBox('段階', 営業先段階, v.段階 || '01 未接触', { placeholder: null }))}
@@ -59,22 +63,27 @@ export function render(id) {
       const form = root.querySelector('#pform');
       const exceptId = p?.営業先ID;
       const phoneInput = form.elements.電話番号;
-      const nameInput = form.elements.施設名;
+      const nameInput = form.elements.顧客名;
 
       const checkPhone = () => {
         const dup = L.samePhone(phoneInput.value, exceptId);
         root.querySelector('#phone-warn').innerHTML = dup.length
-          ? `<div class="alert">${icon('alert', 18)}<div><b>同じ電話番号の営業先があります</b><br>${dup.map((d) => `<a href="#/p/${encodeURIComponent(d.営業先ID)}">${esc(d.施設名)}（${esc(d.市区町村 || '')}）</a>`).join('<br>')}</div></div>`
+          ? `<div class="alert">${icon('alert', 18)}<div><b>同じ電話番号の営業先があります</b><br>${dup.map((d) => `<a href="#/p/${encodeURIComponent(d.営業先ID)}">${esc(d.顧客名)}（${esc(d.市区町村 || '')}）</a>`).join('<br>')}</div></div>`
           : '';
         return dup;
       };
       const checkName = () => {
         const name = nameInput.value.trim();
-        const sim = name.length < 2 ? [] : state.data.営業先.filter((x) => x.営業先ID !== exceptId && similarName(x.施設名, name)).slice(0, 5);
+        const sim = name.length < 2 ? [] : state.data.営業先.filter((x) => x.営業先ID !== exceptId && similarName(x.顧客名, name)).slice(0, 5);
         root.querySelector('#name-warn').innerHTML = sim.length
-          ? `<div class="alert alert-soft">${icon('alert', 18)}<div><b>似た名前の営業先があります</b>（別の施設なら、そのまま登録できます）<br>${sim.map((d) => `<a href="#/p/${encodeURIComponent(d.営業先ID)}">${esc(d.施設名)}</a> ${esc(fmtPhone(d.電話番号))}`).join('<br>')}</div></div>`
+          ? `<div class="alert alert-soft">${icon('alert', 18)}<div><b>似た名前の営業先があります</b>（別の施設なら、そのまま登録できます）<br>${sim.map((d) => `<a href="#/p/${encodeURIComponent(d.営業先ID)}">${esc(d.顧客名)}</a> ${esc(fmtPhone(d.電話番号))}`).join('<br>')}</div></div>`
           : '';
       };
+      root.querySelector('#show-keiretsu').addEventListener('click', (e) => {
+        e.currentTarget.hidden = true;
+        root.querySelector('#keiretsu-box').hidden = false;
+        form.elements.系列.focus();
+      });
       phoneInput.addEventListener('blur', checkPhone);
       phoneInput.addEventListener('input', () => { if (phoneDigits(phoneInput.value).length >= 10) checkPhone(); });
       nameInput.addEventListener('blur', checkName);
@@ -90,7 +99,7 @@ export function render(id) {
         e.preventDefault();
         const v2 = formValues(form);
         const errors = [];
-        if (!v2.施設名) errors.push('施設名');
+        if (!v2.顧客名) errors.push('顧客名');
         if (!phoneDigits(v2.電話番号)) errors.push('電話番号');
         if (!v2.業種) errors.push('業種');
         if (errors.length) { toast(`${errors.join('・')}を入れてください`, { kind: 'warn' }); return; }
@@ -99,7 +108,7 @@ export function render(id) {
           if (!ok) return;
         }
         const patch = {
-          施設名: v2.施設名, 法人名: v2.法人名, 業種: joinOther(v2.業種, v2.業種その他),
+          顧客名: v2.顧客名, 系列: v2.系列, 業種: joinOther(v2.業種, v2.業種その他),
           顧客区分: v2.顧客区分, 顧客ランク: v2.顧客ランク, 段階: v2.段階,
           電話番号: v2.電話番号, 都道府県: v2.都道府県, 市区町村: v2.市区町村, 番地: v2.番地,
           WebサイトURL: v2.WebサイトURL, 情報元URL: v2.情報元URL, 確認状態: v2.確認状態, メモ: v2.メモ,

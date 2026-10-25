@@ -7,7 +7,7 @@ import { nav } from '../nav.js';
 import { field, icon, confirmDialog, empty } from '../ui.js';
 import { esc, fmtDateTime, toast } from '../util.js';
 
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.1.0';
 
 export function render() {
   const first = !sync.isConfigured();
@@ -77,7 +77,7 @@ export function render() {
         const f = e.target;
         const url = f.url.value.trim();
         const secret = f.secret.value.trim().toUpperCase();
-        if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) {
+        if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url) || url.includes('…')) {
           toast('URL は https://script.google.com/ で始まり /exec で終わるものを入れてください', { kind: 'warn', ms: 6000 });
           return;
         }

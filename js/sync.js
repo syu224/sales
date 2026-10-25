@@ -313,7 +313,7 @@ function upsertServer(tab, row) {
 }
 
 function describe(tab, row) {
-  if (tab === '営業先') return `「${row.施設名 || row.営業先ID}」`;
+  if (tab === '営業先') return `「${row.顧客名 || row.営業先ID}」`;
   if (tab === '案件') return `案件「${row.案件名 || row.案件ID}」`;
   if (tab === '担当者') return `担当者「${row.氏名 || row.担当者ID}」`;
   return `${tab} ${row[idField(tab)] || ''}`;
