@@ -9,7 +9,7 @@ export function matchProspect(p, q) {
   if (!q) return true;
   const n = normName(q);
   const d = phoneDigits(q);
-  return (n && (normName(p.顧客名).includes(n) || normName(p.系列).includes(n) || normName(p.市区町村).includes(n)))
+  return (n && (normName(p.顧客名).includes(n) || normName(p.よみがな).includes(n) || normName(p.系列).includes(n) || normName(p.市区町村).includes(n)))
     || (d.length >= 3 && phoneDigits(p.電話番号).includes(d));
 }
 

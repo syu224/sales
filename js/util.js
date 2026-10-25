@@ -106,7 +106,14 @@ export function fmtPhone(s) {
 // ───── 顧客名の似ている判定 ─────
 const CORP_WORDS = /(株式会社|有限会社|合同会社|合資会社|医療法人(社団|財団)?|社会福祉法人|一般社団法人|公益社団法人|一般財団法人|公益財団法人|協同組合|事業協同組合|特定非営利活動法人|NPO法人|\(株\)|\(有\)|㈱|㈲)/g;
 export function normName(s) {
-  return String(s || '').normalize('NFKC').toLowerCase().replace(CORP_WORDS, '').replace(/[\s・\-ー()（）「」]/g, '');
+  return String(s || '').normalize('NFKC').toLowerCase().replace(CORP_WORDS, '')
+    .replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60)) // カタカナ→ひらがな
+    .replace(/[\s・\-ー()（）「」]/g, '');
+}
+/** 並べ替え用の名前（よみがながあれば優先） */
+export function nameKey(p) {
+  return String(p.よみがな || p.顧客名 || '').normalize('NFKC')
+    .replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
 }
 function bigrams(s) {
   const out = new Set();

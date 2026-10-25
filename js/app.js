@@ -11,6 +11,9 @@ import * as today from './views/today.js';
 import * as calls from './views/calls.js';
 import * as deals from './views/deals.js';
 import * as progress from './views/progress.js';
+import * as listCustomers from './views/listCustomers.js';
+import * as listActivities from './views/listActivities.js';
+import { lastListTab } from './views/listTabs.js';
 import * as search from './views/search.js';
 import * as settings from './views/settings.js';
 import * as prospectView from './views/prospect.js';
@@ -24,6 +27,9 @@ const routes = [
   [/^calls$/, () => calls.render()],
   [/^deals$/, () => deals.render()],
   [/^progress$/, () => progress.render()],
+  [/^list$/, () => null], // 最後に見ていた一覧へ（route() で振り分け）
+  [/^list\/customers$/, () => listCustomers.render()],
+  [/^list\/activities$/, () => listActivities.render()],
   [/^search$/, () => search.render()],
   [/^settings$/, () => settings.render()],
   [/^p\/new$/, (m, q) => prospectForm.render(null, q)],
@@ -41,7 +47,7 @@ const TABS = [
   { id: 'calls', label: '架電', icon: 'phone' },
   { id: 'add', label: '登録・記録', icon: 'plus' },
   { id: 'deals', label: '案件', icon: 'deal' },
-  { id: 'progress', label: '進捗', icon: 'chart' },
+  { id: 'list', label: '一覧', icon: 'list' },
 ];
 
 let current = null; // { path, view }
@@ -75,6 +81,10 @@ function route() {
     history.replaceState({ d: depth }, '', '#/settings');
     return route();
   }
+  if (path === 'list') {
+    history.replaceState({ d: depth }, '', `#/${lastListTab()}`);
+    return route();
+  }
   let view = null;
   for (const [re, fn] of routes) {
     const m = path.match(re);
@@ -100,7 +110,10 @@ function paint({ keepScroll = false } = {}) {
 
 /** データが変わったら、一覧系の画面だけ描き直す（入力中のフォームは消さない） */
 function refreshLive() {
-  if (!current || !current.view.live) return;
+  if (!current) return;
+  // 検索欄などがある一覧は、結果の部分だけ描き直す（入力中の文字を消さない）
+  if (current.view.onData) { current.view.onData(document.getElementById('view')); return; }
+  if (!current.view.live) return;
   const { path, query } = parseHash();
   for (const [re, fn] of routes) {
     const m = path.match(re);

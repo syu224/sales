@@ -18,6 +18,7 @@ export function render(id) {
     <div class="page">
       <form class="form card" id="pform" novalidate>
         ${field('顧客名', `<input name="顧客名" value="${esc(v.顧客名 || '')}" required autocomplete="off" placeholder="例：○○病院">`, { required: true })}
+        ${field('よみがな', `<input name="よみがな" value="${esc(v.よみがな || '')}" autocomplete="off" placeholder="例：さくらそうごうびょういん">`, { hint: '省略可。入れておくと一覧を「あいうえお順」で並べられます' })}
         <div id="name-warn"></div>
         <button type="button" class="link-btn" id="show-keiretsu" ${v.系列 ? 'hidden' : ''}>${icon('plus', 16)}系列を入れる（系列がある場合）</button>
         <div id="keiretsu-box" ${v.系列 ? '' : 'hidden'}>
@@ -108,7 +109,7 @@ export function render(id) {
           if (!ok) return;
         }
         const patch = {
-          顧客名: v2.顧客名, 系列: v2.系列, 業種: joinOther(v2.業種, v2.業種その他),
+          顧客名: v2.顧客名, よみがな: v2.よみがな, 系列: v2.系列, 業種: joinOther(v2.業種, v2.業種その他),
           顧客区分: v2.顧客区分, 顧客ランク: v2.顧客ランク, 段階: v2.段階,
           電話番号: v2.電話番号, 都道府県: v2.都道府県, 市区町村: v2.市区町村, 番地: v2.番地,
           WebサイトURL: v2.WebサイトURL, 情報元URL: v2.情報元URL, 確認状態: v2.確認状態, メモ: v2.メモ,

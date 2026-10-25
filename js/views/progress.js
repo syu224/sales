@@ -3,6 +3,7 @@
 import { state } from '../sync.js';
 import * as L from '../logic.js';
 import { esc, monthStr } from '../util.js';
+import { listTabs } from './listTabs.js';
 
 export function render() {
   const month = monthStr();
@@ -14,6 +15,7 @@ export function render() {
 
   const html = `
     <div class="page">
+      ${listTabs('progress')}
       <div class="stats">
         ${stat('進行中の案件', open.length)}
         ${stat('今月の受注', sum.新規開拓.won + sum.既存アップセル.won)}
@@ -35,7 +37,7 @@ export function render() {
         <p class="note">段階ごとのグラフ・業種別の表・「14日以上動きのない案件」は第2段階で追加します。</p>
       </section>
     </div>`;
-  return { title: '進捗', tab: 'progress', live: true, html };
+  return { title: '一覧', tab: 'list', live: true, html };
 }
 
 function stat(label, n) {

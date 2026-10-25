@@ -216,6 +216,31 @@ small { font-size: 13px; color: var(--ink-2); font-weight: 400; }
 .link-btn { display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; background: none; border: 0; padding: 4px 0; color: var(--primary); font-size: 13px; font-weight: 500; min-height: var(--tap); }
 .alert .link-btn { color: var(--warn); margin-top: 4px; min-height: 0; text-decoration: underline; }
 
+/* 一覧タブ */
+.subtabs { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--chip); border-radius: 12px; padding: 4px; gap: 4px; }
+.subtab { display: grid; place-items: center; min-height: 40px; border-radius: 9px; color: var(--ink-2); font-weight: 700; font-size: 14px; }
+.subtab.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(20, 23, 31, .12); }
+.list-tools { display: flex; gap: 8px; align-items: center; }
+.list-tools .chip-select { max-width: none; }
+.list-tools .btn { flex: none; }
+.filters .filter-line { align-items: flex-start; }
+.filters .filter-line .filter-label { padding-top: 8px; }
+.filters .filter-line .chips, .filters .filter-line .seg { flex: 1; min-width: 0; }
+.seg-scroll { overflow-x: auto; scrollbar-width: none; }
+.seg-scroll::-webkit-scrollbar { display: none; }
+.seg-scroll .seg { min-width: 420px; }
+.day-head { margin: 8px 2px 0; font-size: 14px; color: var(--ink-2); font-weight: 700; }
+.clamp3 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.tl-head a { color: var(--ink); }
+
+/* 今日の架電数 */
+.today-count { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); padding: 0 2px; }
+.today-count b { font-size: 22px; color: var(--ink); }
+.today-count .cnt { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.seg-period { gap: 6px; }
+.seg-period .seg-item span { padding: 6px 16px; }
+.today-count .sep { width: 1px; height: 14px; background: var(--line); margin: 0 6px; align-self: center; }
+
 /* 架電カード */
 .filters { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
 .filter-line { display: flex; align-items: center; gap: 10px; min-width: 0; }

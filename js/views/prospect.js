@@ -4,7 +4,7 @@ import * as sync from '../sync.js';
 import * as L from '../logic.js';
 import { 段階変更 } from '../schema.js';
 import { icon, rankBadge, stageBadge, chip, empty, kindIcon, openSheet, closeSheet, field, selectBox, formValues } from '../ui.js';
-import { esc, fmtPhone, phoneDigits, copyText, toast, mapsUrl, safeUrl, fmtDate, fmtDateTime, fmtPeriod } from '../util.js';
+import { esc, fmtPhone, phoneDigits, copyText, toast, mapsUrl, safeUrl, fmtDate, fmtDateTime, fmtPeriod, normName, nameKey } from '../util.js';
 
 export function render(id) {
   const p = L.prospect(id);
@@ -21,6 +21,10 @@ export function render(id) {
   const web = safeUrl(p.WebサイトURL);
   const src = safeUrl(p.情報元URL);
   const excluded = L.isTrue(p.対象外);
+  const siblings = p.系列
+    ? sync.state.data.営業先.filter((x) => x.営業先ID !== sid && !x.統合先ID && normName(x.系列) === normName(p.系列))
+      .sort((a, b) => nameKey(a).localeCompare(nameKey(b), 'ja'))
+    : [];
 
   const html = `
     <div class="page">
@@ -50,6 +54,11 @@ export function render(id) {
         </div>
         <a class="link-btn" href="#/p/${enc}/edit">${icon('edit', 16)}営業先の情報を編集</a>
       </section>
+
+      ${siblings.length ? `<section class="card">
+        <h2 class="card-title">同じ系列の顧客 <span class="count num">${siblings.length}</span></h2>
+        <ul class="rows">${siblings.map(siblingRow).join('')}</ul>
+      </section>` : ''}
 
       <section class="card">
         <div class="card-head"><h2 class="card-title">案件 <span class="count num">${deals.length}</span></h2></div>
@@ -82,6 +91,20 @@ export function render(id) {
       root.querySelectorAll('[data-contact]').forEach((b) => b.addEventListener('click', () => editContact(sid, b.dataset.contact)));
     },
   };
+}
+
+function siblingRow(x) {
+  const last = L.lastActivity(x.営業先ID);
+  return `<li class="row ${L.isTrue(x.対象外) ? 'row-muted' : ''}">
+    <a class="row-main" href="#/p/${encodeURIComponent(x.営業先ID)}">
+      ${rankBadge(x.顧客ランク)}
+      <span class="row-body">
+        <span class="row-title">${esc(x.顧客名)}</span>
+        <span class="row-text">${esc([x.業種, x.市区町村, last ? `前回 ${fmtDate(last.日時)} ${last.結果 || last.種別}` : '記録なし'].filter(Boolean).join(' ・ '))}</span>
+      </span>
+      ${stageBadge(x.段階 || '01 未接触')}
+    </a>
+  </li>`;
 }
 
 function dealRow(d) {

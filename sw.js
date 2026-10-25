@@ -1,6 +1,6 @@
 // オフラインでも画面を開けるようにする仕組み（Service Worker）
 // アプリのファイルを更新したら VERSION を上げること（端末の古い控えが入れ替わる）
-const VERSION = 'v1.1.0';
+const VERSION = 'v1.2.0';
 const CACHE = `rentic-${VERSION}`;
 const FILES = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png',
@@ -8,10 +8,16 @@ const FILES = [
   './js/views/today.js', './js/views/calls.js', './js/views/deals.js', './js/views/progress.js', './js/views/search.js',
   './js/views/settings.js', './js/views/prospect.js', './js/views/prospectForm.js', './js/views/activityForm.js',
   './js/views/deal.js', './js/views/dealForm.js', './js/views/pick.js',
+  './js/views/listTabs.js', './js/views/listCustomers.js', './js/views/listActivities.js',
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // GitHub Pages はファイルを10分間ブラウザに残すので、必ずサーバーから取り直す
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: 'reload' }))))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener('activate', (e) => {
@@ -34,7 +40,7 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const cached = await cache.match(req, { ignoreSearch: sameOrigin });
-      const fresh = fetch(req).then((res) => {
+      const fresh = fetch(req, sameOrigin ? { cache: 'no-cache' } : {}).then((res) => {
         if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
         return res;
       }).catch(() => cached);

@@ -2,7 +2,8 @@
 
 import * as L from '../logic.js';
 import { nav } from '../nav.js';
-import { 業種, ランク } from '../schema.js';
+import { 業種, ランク, つながった結果 } from '../schema.js';
+import { state } from '../sync.js';
 import { icon, rankBadge, chip, empty } from '../ui.js';
 import { esc, fmtPhone, phoneDigits, copyText, toast, downloadCsv, todayStr, fmtDate, daysBetween } from '../util.js';
 
@@ -20,8 +21,18 @@ export function render() {
   const areas = L.areas();
   const FRESH_MAX = 60;
 
+  const today = todayStr();
+  const todayCalls = state.data.活動履歴.filter((a) => a.種別 === '架電' && String(a.日時).slice(0, 10) === today);
+  const reached = todayCalls.filter((a) => つながった結果.includes(a.結果)).length;
+  const appo = todayCalls.filter((a) => a.結果 === 'アポ獲得').length;
+
   const html = `
     <div class="page">
+      <div class="today-count">
+        <span class="cnt"><span>今日の架電</span><b class="num">${todayCalls.length}</b><span>件</span></span>
+        <span class="sep"></span><span class="cnt"><span>つながり</span><b class="num">${reached}</b></span>
+        <span class="sep"></span><span class="cnt"><span>アポ</span><b class="num">${appo}</b></span>
+      </div>
       <div class="filters">
         <div class="filter-line">
           <span class="filter-label">エリア</span>
