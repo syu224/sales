@@ -1,6 +1,6 @@
 // オフラインでも画面を開けるようにする仕組み（Service Worker）
 // アプリのファイルを更新したら VERSION を上げること（端末の古い控えが入れ替わる）
-const VERSION = 'v1.2.0';
+const VERSION = 'v1.3.0';
 const CACHE = `rentic-${VERSION}`;
 const FILES = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png',

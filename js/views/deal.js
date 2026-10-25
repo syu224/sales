@@ -79,7 +79,7 @@ function actItem(a) {
         <a class="tl-edit" href="#/act/${encodeURIComponent(a.活動ID)}/edit" aria-label="記録を直す">${icon('edit', 16)}</a></div>
       ${c ? `<div class="tl-sub">${icon('user', 14)}${esc(contactLabel(c))}</div>` : ''}
       ${a.メモ ? `<div class="tl-memo">${esc(a.メモ)}</div>` : ''}
-      ${a.次の一手 ? `<div class="tl-next">${icon('chevron', 14)}次：${esc(a.次の一手)}${a.次の予定日 ? `（${esc(fmtDate(a.次の予定日))}）` : ''}</div>` : ''}
+      ${a.次の一手 ? `<div class="tl-next">${icon('chevron', 14)}次：${esc(a.次の一手)}${a.次の予定日 ? `（${esc(fmtDate(a.次の予定日))}${a.次の予定時刻 ? ' ' + esc(a.次の予定時刻) : ''}）` : ''}</div>` : ''}
     </div>
   </li>`;
 }

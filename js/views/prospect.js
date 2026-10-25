@@ -153,7 +153,7 @@ function actItem(a) {
       ${d ? `<div class="tl-sub">${icon('deal', 14)}${esc(d.案件名 || '案件')}</div>` : ''}
       ${a.メモ ? `<div class="tl-memo">${esc(a.メモ)}</div>` : ''}
       ${a.訪問予定日時 ? `<div class="tl-next">${icon('visit', 14)}訪問予定 ${esc(fmtDateTime(a.訪問予定日時))}</div>` : ''}
-      ${a.次の一手 || a.次の予定日 ? `<div class="tl-next">${icon('chevron', 14)}次：${esc(a.次の一手 || '')}${a.次の予定日 ? `（${esc(fmtDate(a.次の予定日))}）` : ''}</div>` : ''}
+      ${a.次の一手 || a.次の予定日 ? `<div class="tl-next">${icon('chevron', 14)}次：${esc(a.次の一手 || '')}${a.次の予定日 ? `（${esc(fmtDate(a.次の予定日))}${a.次の予定時刻 ? ' ' + esc(a.次の予定時刻) : ''}）` : ''}</div>` : ''}
     </div>
   </li>`;
 }

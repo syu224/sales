@@ -173,18 +173,18 @@ function item(a) {
         <a class="tl-edit" href="#/act/${encodeURIComponent(a.活動ID)}/edit" aria-label="記録を直す">${icon('edit', 16)}</a></div>
       ${c || d ? `<div class="tl-sub">${c ? `${icon('user', 14)}${esc(contactLabel(c))}` : ''}${d ? ` ${icon('deal', 14)}${esc(d.案件名 || '案件')}` : ''}</div>` : ''}
       ${a.メモ ? `<div class="tl-memo clamp3">${esc(a.メモ)}</div>` : ''}
-      ${a.次の一手 ? `<div class="tl-next">${icon('chevron', 14)}次：${esc(a.次の一手)}${a.次の予定日 ? `（${esc(fmtDate(a.次の予定日))}）` : ''}</div>` : ''}
+      ${a.次の一手 ? `<div class="tl-next">${icon('chevron', 14)}次：${esc(a.次の一手)}${a.次の予定日 ? `（${esc(fmtDate(a.次の予定日))}${a.次の予定時刻 ? ' ' + esc(a.次の予定時刻) : ''}）` : ''}</div>` : ''}
     </div>
   </li>`;
 }
 
 function exportCsv(rows, S) {
-  const head = ['日時', '営業先ID', '顧客名', '系列', '区分', '業種', '市区町村', '種別', '結果', '先方担当者', '案件名', '利用目的', 'メモ', '次の一手', '次の予定日', '訪問予定日時'];
+  const head = ['日時', '営業先ID', '顧客名', '系列', '区分', '業種', '市区町村', '種別', '結果', '先方担当者', '案件名', '利用目的', 'メモ', '次の一手', '次の予定日', '次の予定時刻', '訪問予定日時'];
   const body = rows.map((a) => {
     const p = L.prospect(a.営業先ID) || {};
     const d = a.案件ID ? L.deal(a.案件ID) || {} : {};
     return [a.日時, a.営業先ID, p.顧客名, p.系列, p.顧客名 ? L.segmentOf(p) : '', p.業種, p.市区町村, a.種別, a.結果,
-      contactLabel(L.contact(a.担当者ID)), d.案件名, d.利用目的, a.メモ, a.次の一手, a.次の予定日, a.訪問予定日時];
+      contactLabel(L.contact(a.担当者ID)), d.案件名, d.利用目的, a.メモ, a.次の一手, a.次の予定日, a.次の予定時刻, a.訪問予定日時];
   });
   const [from, to] = range(S);
   const label = S.period === 'all' ? 'すべて' : `${from}_${to}`.replace(/-31$/, '末');

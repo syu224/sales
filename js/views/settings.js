@@ -7,7 +7,7 @@ import { nav } from '../nav.js';
 import { field, icon, confirmDialog, empty } from '../ui.js';
 import { esc, fmtDateTime, toast } from '../util.js';
 
-export const APP_VERSION = '1.2.0';
+export const APP_VERSION = '1.3.0';
 
 export function render() {
   const first = !sync.isConfigured();

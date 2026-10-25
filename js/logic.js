@@ -63,11 +63,25 @@ export function nextActions() {
     if (d && isClosedDeal(d)) return;
     out.push({
       kind: 'next', key, act: a, prospect: p, deal: d,
-      date: a.次の予定日, text: a.次の一手 || '（次の一手が未記入）',
+      date: a.次の予定日, time: a.次の予定時刻 || '', text: a.次の一手 || '（次の一手が未記入）',
       overdue: a.次の予定日 < today, today: a.次の予定日 === today,
     });
   });
-  return out.sort((x, y) => (x.date < y.date ? -1 : x.date > y.date ? 1 : 0));
+  return out.sort(byDateTime);
+}
+
+/** 日付→時刻の順（時刻なしはその日の最後） */
+export const byDateTime = (x, y) => `${x.date}|${x.time || '99'}`.localeCompare(`${y.date}|${y.time || '99'}`);
+
+export function nowHM(d = new Date()) {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/** 架電の回数（今日・通算）と、最後の架電 */
+export function callStats(sid) {
+  const today = todayStr();
+  const calls = state.data.活動履歴.filter((a) => a.営業先ID === sid && a.種別 === '架電').sort((x, y) => actSort(y).localeCompare(actSort(x)));
+  return { today: calls.filter((a) => String(a.日時).slice(0, 10) === today).length, total: calls.length, last: calls[0] };
 }
 
 /** 契約書の返送待ち（07 の案件） */
@@ -91,7 +105,7 @@ export function todayTodos() {
     ...nextActions().filter((n) => n.overdue || n.today),
     ...contractWaiting().filter((c) => c.overdue || c.today),
   ];
-  return items.sort((x, y) => (x.overdue !== y.overdue ? (x.overdue ? -1 : 1) : x.date < y.date ? -1 : 1));
+  return items.sort((x, y) => (x.overdue !== y.overdue ? (x.overdue ? -1 : 1) : byDateTime(x, y)));
 }
 
 /** 訪問予定（from〜to の日付範囲） */
@@ -128,13 +142,17 @@ const rankOrder = (r) => { const i = ランク.indexOf(r); return i < 0 ? 9 : i;
 
 /**
  * 架電リスト
- *  due      … 再架電の期日が来た先（次の予定日が今日以前）と、再アプローチ時期が来た失注・保留案件
- *  fresh    … 未接触の先（ランク順）
+ *  due      … 今かける先：次の予定日が今日以前（今日で時刻指定ありなら、その時刻を過ぎたもの）と、
+ *              再アプローチ時期が来た失注・保留案件
+ *  later    … 今日このあと：今日の予定で、指定時刻がまだ来ていない先
+ *  fresh    … 未接触のテレアポ候補（ランク順）
+ *  future   … 予定が明日以降の先
  *  check    … 電話番号が空・番号違い
  */
 export function callList(f = {}) {
   const today = todayStr();
   const month = monthStr();
+  const now = nowHM();
   const match = (p) => isActive(p)
     && (!f.area || p.市区町村 === f.area)
     && (!f.ranks?.length || f.ranks.includes(p.顧客ランク || 'C'))
@@ -143,18 +161,24 @@ export function callList(f = {}) {
   const nexts = nextActions();
   const scheduled = new Set(); // 先の予定が入っている営業先
   const due = [];
+  const later = [];
+  const future = [];
   const dueIds = new Set();
   nexts.forEach((n) => {
     if (!match(n.prospect)) return;
+    const id = n.prospect.営業先ID;
     if (n.date <= today) {
-      if (!n.deal && !dueIds.has(n.prospect.営業先ID)) {
-        due.push({ ...n, reason: n.overdue ? '期限超過' : '本日' });
-        dueIds.add(n.prospect.営業先ID);
+      if (!n.deal && !dueIds.has(id)) {
+        if (n.today && n.time && n.time > now) later.push({ ...n, reason: 'このあと' });
+        else due.push({ ...n, reason: n.overdue ? '期限超過' : '本日' });
+        dueIds.add(id);
       }
     } else {
-      scheduled.add(n.prospect.営業先ID);
+      if (!n.deal && !scheduled.has(id)) future.push({ ...n, reason: '予定' });
+      scheduled.add(id);
     }
   });
+  const futureList = future.filter((n) => !dueIds.has(n.prospect.営業先ID));
   state.data.案件.forEach((d) => {
     const c = stageCode(d.段階);
     if ((c === '09' || c === '10') && d.再アプローチ時期 && d.再アプローチ時期.slice(0, 7) <= month) {
@@ -171,12 +195,16 @@ export function callList(f = {}) {
     if (!match(p)) return;
     if (!phoneDigits(p.電話番号) || p.確認状態 === '番号違い') { check.push(p); return; }
     if (dueIds.has(p.営業先ID) || scheduled.has(p.営業先ID)) return;
-    if (stageCode(p.段階 || '01') === '01') fresh.push(p);
+    // 未接触の欄はテレアポ候補だけ（区分が空の行はシート直貼りのテレアポ候補として扱う）
+    if (stageCode(p.段階 || '01') === '01' && (p.顧客区分 || 'テレアポ候補') === 'テレアポ候補') fresh.push(p);
   });
   fresh.sort((a, b) => rankOrder(a.顧客ランク || 'C') - rankOrder(b.顧客ランク || 'C')
     || String(a.市区町村).localeCompare(String(b.市区町村), 'ja')
     || String(a.顧客名).localeCompare(String(b.顧客名), 'ja'));
-  return { due, fresh, check };
+  // 今かける先：期限超過 → 時刻が来た順 → 時刻なし
+  due.sort((x, y) => (x.overdue !== y.overdue ? (x.overdue ? -1 : 1) : byDateTime(x, y)));
+  later.sort(byDateTime);
+  return { due, later, fresh, future: futureList, check };
 }
 
 export function areas() {

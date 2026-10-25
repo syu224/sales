@@ -249,7 +249,7 @@ small { font-size: 13px; color: var(--ink-2); font-weight: 400; }
 .call-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; color: var(--ink); }
 .call-top { display: flex; align-items: center; gap: 10px; color: var(--ink); min-height: 32px; }
 .call-name { font-size: 17px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.call-meta { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.call-meta { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
 .call-due { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; color: var(--primary); font-weight: 500; }
 .call-due .ic { margin-top: 3px; }
 .call-due.warn { color: var(--warn); }
@@ -323,6 +323,9 @@ small { font-size: 13px; color: var(--ink-2); font-weight: 400; }
 .fold summary { cursor: pointer; font-size: 17px; font-weight: 700; padding: 8px 0; display: flex; gap: 8px; align-items: baseline; list-style: none; }
 .fold summary::before { content: "▸"; color: var(--ink-2); }
 .fold[open] summary::before { content: "▾"; }
+.fold summary small { font-size: 13px; }
+.fold-body { display: flex; flex-direction: column; gap: 12px; }
+.call-top .badge { flex: none; }
 
 /* ───── フォーム ───── */
 .form { display: flex; flex-direction: column; gap: 14px; }
@@ -430,7 +433,10 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); o
   .view[data-tab="calls"] .page > .list-head,
   .view[data-tab="calls"] .page > .empty,
   .view[data-tab="calls"] .page > .more-note,
-  .view[data-tab="calls"] .page > .btn { grid-column: 1 / -1; }
+  .view[data-tab="calls"] .page > .btn,
+  .view[data-tab="calls"] .page > .today-count,
+  .view[data-tab="calls"] .page > details { grid-column: 1 / -1; }
+  .view[data-tab="calls"] .fold-body { display: grid; grid-template-columns: repeat(2, 1fr); align-items: start; }
   .sheet { left: 50%; right: auto; bottom: auto; top: 50%; width: 520px; border-radius: 18px; transform: translate(-50%, -46%); opacity: 0; transition: opacity .18s, transform .18s; padding-bottom: 20px; }
   .sheet-wrap.open .sheet { transform: translate(-50%, -50%); opacity: 1; }
   .sheet-grip { display: none; }

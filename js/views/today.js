@@ -83,7 +83,7 @@ function alerts({ orphanCount, noPhone }) {
 
 function dueBadge(t) {
   if (t.overdue) return `<span class="badge badge-warn">${daysBetween(t.date, todayStr())}日超過</span>`;
-  return '<span class="badge badge-today">本日</span>';
+  return `<span class="badge badge-today">本日${t.time ? ' ' + esc(t.time) : ''}</span>`;
 }
 
 function todoRow(t) {

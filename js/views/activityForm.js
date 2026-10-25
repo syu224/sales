@@ -8,8 +8,10 @@ import { field, segmented, formValues, icon, confirmDialog } from '../ui.js';
 import { esc, localDateTime, todayStr, addDays, addMonths, fmtDate, toast } from '../util.js';
 import { editContact, contactLabel } from './prospect.js';
 
-const QUICK_DAYS = [['明日', 1], ['3日後', 3], ['1週間後', 7], ['2週間後', 14], ['1か月後', 'm1'], ['3か月後', 'm3']];
-const QUICK_NEXT = ['再架電', '訪問', '見積書を送る', '資料を送る', '契約書の確認'];
+const QUICK_DAYS = [['今日', 0], ['明日', 1], ['3日後', 3], ['1週間後', 7], ['2週間後', 14], ['1か月後', 'm1'], ['3か月後', 'm3']];
+// 'h1' = 今から1時間後、'13:00' = その時刻
+const QUICK_TIMES = [['1時間後', 'h1'], ['2時間後', 'h2'], ['3時間後', 'h3'], ['13時', '13:00'], ['16時', '16:00']];
+const QUICK_NEXT =['再架電', '訪問', '見積書を送る', '資料を送る', '契約書の確認'];
 
 export function render(actId, q = {}) {
   const a = actId ? sync.get('活動履歴', sync.realId(actId)) : null;
@@ -53,6 +55,8 @@ export function render(actId, q = {}) {
           ${field('次の一手', `<input name="次の一手" value="${esc(v.次の一手 || '')}" placeholder="例：見積書を送って反応を聞く" autocomplete="off">`, { required: true })}
           <div class="chips">${QUICK_DAYS.map(([l, n]) => `<button type="button" class="chip chip-btn" data-days="${n}">${l}</button>`).join('')}</div>
           ${field('次の予定日', `<input type="date" name="次の予定日" value="${esc(v.次の予定日 || '')}">`, { required: true, hint: 'この日に「今日やること」に出ます' })}
+          <div class="chips">${QUICK_TIMES.map(([l, t]) => `<button type="button" class="chip chip-btn" data-time="${t}">${l}</button>`).join('')}</div>
+          ${field('時刻（任意）', `<div class="inline"><input type="time" name="次の予定時刻" value="${esc(v.次の予定時刻 || '')}"><button type="button" class="btn btn-ghost btn-small" id="clear-time">消す</button></div>`, { hint: 'かけ直す時刻。その時刻になると架電リストの「今かける先」に移ります' })}
         </div>
 
         ${a ? '' : `<div id="auto-box" class="auto-box" hidden></div>`}
@@ -88,6 +92,11 @@ export function render(actId, q = {}) {
           const appo = e.target.value === 'アポ獲得';
           root.querySelector('#visit-box').hidden = !appo;
           if (appo && !el.次の一手.value) el.次の一手.value = '訪問';
+          // 不在なら、たいてい同じ日にかけ直す
+          if (e.target.value === '不在' && !a) {
+            if (!el.次の一手.value) el.次の一手.value = '再架電';
+            if (!el.次の予定日.value) el.次の予定日.value = todayStr();
+          }
           refreshAuto();
         }
         if (e.target.name === '訪問予定日時' && e.target.value && !el.次の予定日.value) {
@@ -102,6 +111,19 @@ export function render(actId, q = {}) {
           const k = d.dataset.days;
           el.次の予定日.value = k.startsWith('m') ? addMonths(todayStr(), +k.slice(1)) : addDays(todayStr(), +k);
         }
+        const t = e.target.closest('[data-time]');
+        if (t) {
+          const k = t.dataset.time;
+          if (k.startsWith('h')) {
+            const at = new Date(Date.now() + (+k.slice(1)) * 3600000);
+            el.次の予定日.value = todayStr(at);
+            el.次の予定時刻.value = `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
+          } else {
+            el.次の予定時刻.value = k;
+            if (!el.次の予定日.value) el.次の予定日.value = todayStr();
+          }
+        }
+        if (e.target.closest('#clear-time')) el.次の予定時刻.value = '';
       });
       root.querySelector('#new-contact').addEventListener('click', async () => {
         const id = await editContact(p.営業先ID, null);
@@ -124,7 +146,7 @@ export function render(actId, q = {}) {
         }
         const patch = {
           日時: f.日時 || localDateTime(), 営業先ID: p.営業先ID, 案件ID: f.案件ID || '', 種別: f.種別, 結果: f.結果,
-          担当者ID: f.担当者ID || '', メモ: f.メモ, 次の一手: f.次の一手, 次の予定日: f.次の予定日,
+          担当者ID: f.担当者ID || '', メモ: f.メモ, 次の一手: f.次の一手, 次の予定日: f.次の予定日, 次の予定時刻: f.次の予定時刻 || '',
           訪問予定日時: f.結果 === 'アポ獲得' ? f.訪問予定日時 : (a ? f.訪問予定日時 || '' : ''),
         };
         await sync.save('活動履歴', a?.活動ID || null, patch);

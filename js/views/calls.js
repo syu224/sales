@@ -5,7 +5,7 @@ import { nav } from '../nav.js';
 import { 業種, ランク, つながった結果 } from '../schema.js';
 import { state } from '../sync.js';
 import { icon, rankBadge, chip, empty } from '../ui.js';
-import { esc, fmtPhone, phoneDigits, copyText, toast, downloadCsv, todayStr, fmtDate, daysBetween } from '../util.js';
+import { esc, fmtPhone, phoneDigits, copyText, toast, downloadCsv, todayStr, fmtDate, fmtDateTime, daysBetween } from '../util.js';
 
 const KEY = 'rentic-call-filter';
 function loadFilter() {
@@ -17,7 +17,7 @@ function saveFilter(f) {
 
 export function render() {
   const f = { area: '', ranks: [], kinds: [], ...loadFilter() };
-  const { due, fresh, check } = L.callList(f);
+  const { due, later, fresh, future, check } = L.callList(f);
   const areas = L.areas();
   const FRESH_MAX = 60;
 
@@ -52,15 +52,27 @@ export function render() {
       </div>
 
       <div class="list-head">
-        <h2>再架電の期日が来た先 <span class="count num">${due.length}</span></h2>
+        <h2>今かける先 <small>期日が来た再架電</small> <span class="count num">${due.length}</span></h2>
       </div>
       ${due.length ? due.map((d) => card(d.prospect, d)).join('') : empty('期日が来た先はありません')}
 
+      ${later.length ? `
       <div class="list-head">
-        <h2>未接触 <small>ランク順</small> <span class="count num">${fresh.length}</span></h2>
+        <h2>今日このあと <small>時刻を指定した再架電</small> <span class="count num">${later.length}</span></h2>
       </div>
-      ${fresh.length ? fresh.slice(0, FRESH_MAX).map((p) => card(p)).join('') : empty('未接触の先はありません')}
+      ${later.map((d) => card(d.prospect, d)).join('')}` : ''}
+
+      <div class="list-head">
+        <h2>未接触のテレアポ候補 <small>ランク順</small> <span class="count num">${fresh.length}</span></h2>
+      </div>
+      ${fresh.length ? fresh.slice(0, FRESH_MAX).map((p) => card(p)).join('') : empty('未接触のテレアポ候補はありません')}
       ${fresh.length > FRESH_MAX ? `<p class="more-note">ほか ${fresh.length - FRESH_MAX}件（エリアなどで絞り込むと表示されます）</p>` : ''}
+
+      ${future.length ? `
+      <details class="fold fold-calls">
+        <summary>予定が先の先 <small>明日以降</small> <span class="count num">${future.length}</span></summary>
+        <div class="fold-body">${future.map((d) => card(d.prospect, d)).join('')}</div>
+      </details>` : ''}
 
       ${check.length ? `
       <div class="list-head"><h2>要確認 <small>電話番号なし・番号違い</small> <span class="count num">${check.length}</span></h2></div>
@@ -89,7 +101,14 @@ export function render() {
           toast(ok ? `${c.dataset.copy} をコピーしました` : 'コピーできませんでした。番号を長押ししてください', { kind: ok ? 'info' : 'warn' });
         }
       });
-      root.querySelector('#csv').addEventListener('click', () => exportCsv(due, fresh, check));
+      root.querySelector('#csv').addEventListener('click', () => exportCsv([...due, ...later], fresh, future, check));
+      // 「今日このあと」の時刻が来たら、自動で「今かける先」に移す
+      if (later.length) {
+        const timer = setInterval(() => {
+          if (!document.body.contains(root.querySelector('.today-count'))) { clearInterval(timer); return; }
+          if (later.some((d) => d.time <= L.nowHM())) { clearInterval(timer); nav.refresh(); }
+        }, 30000);
+      }
     },
   };
 }
@@ -98,8 +117,16 @@ function toggle(type, v, on) {
   return `<button class="chip chip-btn ${on ? 'on' : ''}" data-toggle="${type}:${esc(v)}" aria-pressed="${on}">${esc(v)}</button>`;
 }
 
+function dueLabel(d) {
+  if (d.reason === '再アプローチ') return '再アプローチ時期';
+  const day = d.today ? '本日' : fmtDate(d.date);
+  const late = d.overdue ? `（${daysBetween(d.date, todayStr())}日超過）` : '';
+  return `${day}${d.time ? ` ${d.time}〜` : ''}${late}`;
+}
+
 function card(p, due) {
   const last = L.lastActivity(p.営業先ID);
+  const cs = L.callStats(p.営業先ID);
   const digits = phoneDigits(p.電話番号);
   const id = encodeURIComponent(p.営業先ID);
   const dq = due?.deal ? `&d=${encodeURIComponent(due.deal.案件ID)}` : '';
@@ -109,9 +136,10 @@ function card(p, due) {
       <span class="call-name">${esc(p.顧客名)}</span>
       ${p.確認状態 === '未確認' || !p.確認状態 ? '<span class="badge badge-chip">未確認</span>' : ''}
     </a>
-    <div class="call-meta">${chip(p.業種 || '業種未設定')} <span>${esc(p.市区町村 || '')}</span></div>
-    ${due ? `<div class="call-due ${due.overdue ? 'warn' : ''}">${icon('calendar', 16)}<span>${esc(due.reason === '再アプローチ' ? '再アプローチ時期' : fmtDate(due.date))}${due.overdue ? `（${daysBetween(due.date, todayStr())}日超過）` : ''}：${esc(due.text)}</span></div>` : ''}
-    <div class="call-last">${last ? `前回 ${esc(fmtDate(last.日時))}：${esc(last.結果 || last.種別)}${last.メモ ? ` ・ ${esc(last.メモ.slice(0, 40))}` : ''}` : '前回の記録なし'}</div>
+    <div class="call-meta">${chip(p.業種 || '業種未設定')} <span>${esc(p.市区町村 || '')}</span>
+      ${cs.today ? `<span class="badge badge-today">今日${cs.today}回かけた</span>` : ''}${cs.total > cs.today ? `<span>通算${cs.total}回</span>` : ''}</div>
+    ${due ? `<div class="call-due ${due.overdue ? 'warn' : ''}">${icon('calendar', 16)}<span>${esc(dueLabel(due))}：${esc(due.text)}</span></div>` : ''}
+    <div class="call-last">${last ? `前回 ${esc(fmtDateTime(last.日時))}：${esc(last.結果 || last.種別)}${last.メモ ? ` ・ ${esc(last.メモ.slice(0, 40))}` : ''}` : '前回の記録なし'}</div>
     <a class="call-phone num" href="tel:${esc(digits)}">${esc(fmtPhone(p.電話番号))}</a>
     <div class="call-btns">
       <button class="btn btn-ghost" data-copy="${esc(digits)}">${icon('copy', 20)}コピー</button>
@@ -130,16 +158,17 @@ function checkCard(p) {
   </a>`;
 }
 
-function exportCsv(due, fresh, check) {
-  const head = ['区分', '営業先ID', '顧客名', '電話番号', 'ランク', '業種', '都道府県', '市区町村', '確認状態', '前回の日付', '前回の結果', '次の一手', '期日'];
+function exportCsv(due, fresh, future, check) {
+  const head = ['区分', '営業先ID', '顧客名', '電話番号', 'ランク', '業種', '都道府県', '市区町村', '確認状態', '前回の日付', '前回の結果', '次の一手', '期日', '時刻'];
   const row = (kind, p, d) => {
     const last = L.lastActivity(p.営業先ID);
     return [kind, p.営業先ID, p.顧客名, fmtPhone(p.電話番号), p.顧客ランク, p.業種, p.都道府県, p.市区町村, p.確認状態,
-      last ? last.日時.slice(0, 10) : '', last ? last.結果 : '', d ? d.text : '', d ? d.date : ''];
+      last ? last.日時.slice(0, 10) : '', last ? last.結果 : '', d ? d.text : '', d ? d.date : '', d?.time || ''];
   };
   const rows = [head,
     ...due.map((d) => row('再架電', d.prospect, d)),
     ...fresh.map((p) => row('未接触', p)),
+    ...future.map((d) => row('予定が先', d.prospect, d)),
     ...check.map((p) => row('要確認', p))];
   downloadCsv(`架電リスト_${todayStr()}.csv`, rows);
 }
