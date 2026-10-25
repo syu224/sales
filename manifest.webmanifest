@@ -1,0 +1,17 @@
+{
+  "name": "レンティック営業管理",
+  "short_name": "営業管理",
+  "description": "営業先・活動・案件を記録し、今日やることと架電リストを出す自分専用の営業管理",
+  "lang": "ja",
+  "start_url": "./#/today",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F5F7",
+  "theme_color": "#F4F5F7",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
